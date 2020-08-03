@@ -28,6 +28,7 @@
     <modules>
         <module>eureka</module>
         <module>zuul</module>
+        <module>sys-manager</module>
     </modules>
 
     <dependencyManagement>

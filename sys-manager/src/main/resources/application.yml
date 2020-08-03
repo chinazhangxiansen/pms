@@ -1,0 +1,10 @@
+server:
+  port: 8084 #端口自己决定
+spring:
+  application:
+    name: sys-manager  #服务的名称
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8081/eureka/ #注册到eureka的地址
+    registry-fetch-interval-seconds: 5  #eureka client间隔5s去拉取服务注册信息
