@@ -1,0 +1,16 @@
+server:
+  port: 8082 #端口自己决定
+spring:
+  application:
+    name: zuul  #服务的名称
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8081/eureka/ #注册到eureka的地址
+    registry-fetch-interval-seconds: 5  #eureka client间隔5s去拉取服务注册信息
+zuul:
+  prefix: /api # 添加路由前缀
+  sensitive-headers: #忽略请求头设置为null
+  host:
+    connect-timeout-millis: 15000
+    socket-timeout-millis: 60000
