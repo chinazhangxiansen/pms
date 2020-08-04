@@ -3,8 +3,18 @@ server:
 spring:
   application:
     name: sys-manager  #服务的名称
+  datasource:
+    url: jdbc:mysql://localhost:3306/pms?useUnicode=true&characterEncoding=utf8
+    driverClassName: com.mysql.jdbc.Driver
+    username: root
+    password:
+    type: com.alibaba.druid.pool.DruidDataSource
 eureka:
   client:
     service-url:
       defaultZone: http://127.0.0.1:8081/eureka/ #注册到eureka的地址
     registry-fetch-interval-seconds: 5  #eureka client间隔5s去拉取服务注册信息
+
+mybatis:
+  type-aliases-package: com.pangmutou.sysmanager.bean
+  mapper-locations: classpath:mapper/*.xml
