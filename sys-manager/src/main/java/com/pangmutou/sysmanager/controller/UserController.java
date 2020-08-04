@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.pangmutou.sysmanager.bean.User;
 import com.pangmutou.sysmanager.service.IUserService;
+import com.pangmutou.sysmanager.utils.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -91,7 +92,7 @@ public class UserController {
     public String findAllUser(Model model) {
         List<User> users = userService.findAllUser();
         model.addAttribute("users", users);
-        return "userinfo.html";
+        return  GsonUtil.GsonString(users);
     }
 
     /**
