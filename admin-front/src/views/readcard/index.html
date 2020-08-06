@@ -1,0 +1,433 @@
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <link rel="stylesheet" type="text/css" href="/nresource/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/nresource/css/app.css">
+        <link rel="stylesheet" href="/nresource/css/ui-dialog.css">
+        <!--[if lte IE 6]>
+            <link rel="stylesheet" type="text/css" href="/nresource/css/bootstrap-ie6.min.css">
+        <![endif]-->
+        <!--[if lte IE 7]>
+            <link rel="stylesheet" type="text/css" href="/nresource/css/ie.css">
+        <![endif]-->
+        <script type="text/javascript" src="/nresource/js/jquery-1.12.4.min.js">
+        </script>
+        <script type="text/javascript" src="/nresource/js/bootstrap-2.2.1.min.js">
+        </script>
+        <script type="text/javascript" src="/nresource/js/bootstrap-ie.js">
+        </script>
+        <script type="text/javascript" src="/nresource/js/common.js">
+        </script>
+        <!--[if IE 8]>
+            <script type="text/javascript" src="/nresource/js/PIE.js">
+            </script>
+        <![endif]-->
+    </head>
+
+    <body treerel="1">
+        <div style="text-align: center;">
+            <input type="button" class="b_text" value="扫描二代身份证" onClick="CertReadCard()">
+            <input type="button" class="b_text" value="添加" onClick="doAddAH()">
+            <input type="button" class="b_text" value="关闭" onClick="window.close()">
+        </div>
+        <input type="hidden" id="file_local" value="${fileLocal}"/>
+        <input type="hidden" id="certInfo" />
+
+        <OBJECT ID="HWPostil1" width=0px;height=0px CLASSID="CLSID:FF1FE7A0-0578-4FEE-A34E-FB21B277D561" CODEBASE="./ocx/HWPostil.cab#version=3,0,9,2"></OBJECT>
+        <OBJECT classid="clsid:341162BA-3754-448C-BE54-EC34D82D5105" id="objIDCard" width="0" height="0"></OBJECT>
+        <OBJECT classid="clsid:5EB842AE-5C49-4FD8-8CE9-77D4AF9FD4FF" id="IdrControl1" width="0" height="0"></OBJECT>
+        <OBJECT classid="clsid:FFD3E742-47CD-4E67-9613-1BB0D67554FF" id="CardReader_CMCC" width="0" height="0" ></OBJECT>
+        <input type="text" id="jsonStr" value=""/>
+        <input type="hidden" id="fileLocal" value="C:/Windows/Temp/"/>
+        <div id='newPreview'></div>
+    </body>
+
+    <script language="javascript">
+        var tipId;
+        var file_src = "";
+        var cust_message = "";
+        var isScan = false;
+        var isReader = false;
+        //父页面
+        var parent_win = window.dialogArguments;
+        function query_close() {
+            if (tipId != "") {
+                window.clearInterval(tipId);
+            }
+            tipId = window.setInterval("close_msg()", 10000);
+        }
+        //添加附件页、直接去路径下搜索
+        function searchFiles() {
+            var fso = new ActiveXObject("Scripting.FileSystemObject");
+            var f = fso.GetFolder("c:/bmp");
+            var fc = new Enumerator(f.files);
+            var s = "";
+            for (; !fc.atEnd(); fc.moveNext()) {
+                s += fc.item();
+                s += "|";
+            }
+            fk = new Enumerator(f.SubFolders);
+            for (; !fk.atEnd(); fk.moveNext()) {
+                s += fk.item();
+                s += "|";
+            }
+            return s;
+        }
+        function close_msg() {
+            window.clearInterval(tipId);
+            $("#PROMPTMSG").empty()
+        }
+        function PreviewImg(file_srcs) {
+            try {
+                var newPreview = document.getElementById("newPreview");
+                while (newPreview.hasChildNodes()) { //当div下还存在子节点时 循环继续
+                    newPreview.removeChild(newPreview.firstChild);
+                }
+                var imgDiv = document.createElement("div");
+                document.body.appendChild(imgDiv);
+                imgDiv.style.width = "295px";
+                imgDiv.style.height = "400px";
+                imgDiv.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod = scale)";
+                try{
+                    imgDiv.filters.item("DXImageTransform.Microsoft.AlphaImageLoader").src = file_srcs;
+                }catch (e) {
+                    alert(e.message);
+                }
+                newPreview.appendChild(imgDiv);
+            } catch (e) {
+                isScan = false;
+                alert("图片正在加载中，点击确定后继续自动加载!"+e.message);
+            }
+        }
+        var page = HWPostil1.PageCount;
+        function doAdd() {
+            if (!isScan) {
+                showDialog("请扫描证件!", 1);
+                return;
+            }
+            if (confirm("确定添加该证件页么？")) {
+                //插入后台数据库中，证件留存功能
+                var retval = addImageFile(file_src, "${flag}");
+                if (retval == 0) {
+                    var card_type = $("#card_type").val();
+                    if (isReader) {
+                        userreaderflag = "Y";
+                    }
+                    agMerge.addCertPage(file_src, cust_message, card_type);
+//                     var newPreview = $("#newPreview");
+                    var $v=$("#newPreview"); //jQuery对象
+                    var newPreview=$v.get(0); //DOM对象
+                    while (newPreview.hasChildNodes()) { //当div下还存在子节点时 循环继续
+                        newPreview.removeChild(newPreview.firstChild);
+                    }
+                }
+            }
+            isScan = false;//转变为未扫描状态
+        }
+
+        /**
+         *  安徽的添加图片到工单中的方法
+         **/
+        function doAddAH() {
+            isScan = true;
+            if (!isScan) {
+                showDialog("请扫描证件!", 1);
+                return;
+            }
+            var json = $('#jsonStr').val();
+            var obj_a = eval("("+json+")");
+            var fileLocal = $("#fileLocal").val();
+            var fileName = "cert_"+obj_a.phone+".jpg";
+            if (confirm("确定添加该证件页么？")) {
+                //插入后台数据库中，证件留存功能
+                var file_src = fileLocal+fileName;
+                var retval =
+                    0;
+                //addImageFile(file_src, "${flag}");
+                var cardBean = JSON.parse($("#certInfo").val())
+                if (retval == 0) {
+                    var card_type = $("#card_type").val();
+                    if (isReader) {
+                        userreaderflag = "Y";
+                    }
+                    agMerge.addCertPage(cardBean);
+                    var $v=$("#newPreview"); //jQuery对象
+                    var newPreview=$v.get(0); //DOM对象
+                    while (newPreview.hasChildNodes()) { //当div下还存在子节点时 循环继续
+                        newPreview.removeChild(newPreview.firstChild);
+                    }
+                }
+            }
+            isScan = false;//转变为未扫描状态
+        }
+
+        function doDel() {
+            if (confirm("你确定要删除身份证信息吗？如果删除、所有身份证信息都将被删除？") == 1) {
+                deleteCert();
+            }
+        }
+
+        function GetRandomNum(Min, Max) { //得到一个随机数
+            var Range = Max - Min;
+            var Rand = Math.random();
+            return (Min + Math.round(Rand * Range));
+        }
+
+        /**
+         * 身份证读卡
+         */
+        function CertReadCard(){
+            var json = $('#jsonStr').val();
+            var obj_a = eval("("+json+")");
+            var phone_no = obj_a.phone;
+            var file_local_str = $("#fileLocal").val();
+            var fileName = "cert_"+phone_no+".jpg";
+            var file_local = file_local_str.replace(/\\\\/g,'\\');
+            // 清除临时文件
+            // HWPostil1.DeleteLocalFile(file_local+fileName);
+            // var agTenantId = document.getElementById('agTenantId').value;
+            //二代证正反面模板下载
+            // var http_path = document.getElementById('httpPath').value;
+            // http_path = http_path+"/assets_resources/ocx/"+agTenantId+"/cert_model.bmp"
+            // 如果本地目录包含cert_model.bmp,则不覆盖该文件。如该文件不完整，则报错可能出现内存不足的提示。
+            // var ret_down=CardReader_CMCC.DownLoadFromHTTP(http_path, file_local+"cert_model.bmp");
+            // if(ret_down==-1){
+            //     alert("二代证模板下载异常！");
+            //     return;
+            // }
+            var ret_open;
+
+            try{
+                ret_open=CardReader_CMCC.MutiIdCardOpenDevice(1000);
+            }catch (e) {
+                alert("ret_open##1>>>ERROR>>>"+ret_open+">>"+e.message);
+            }
+            if(ret_open!=0){
+                ret_open=CardReader_CMCC.MutiIdCardOpenDevice(1001);
+            }
+            alert("ret_open==>"+ret_open);
+            if(ret_open==0){
+                var ret_getImageMsg=CardReader_CMCC.MutiIdCardGetImageMsg(11,"C:\\Windows\\Temp\\cert_head.jpg");
+                alert("ret_getImageMsg==>"+ret_getImageMsg);
+                if(ret_getImageMsg==0){
+                    //二代证正反面合成
+                    var xm =CardReader_CMCC.MutiIdCardName;
+                    var xb =CardReader_CMCC.MutiIdCardSex;
+                    var mz =CardReader_CMCC.MutiIdCardPeople;
+                    var cs =CardReader_CMCC.MutiIdCardBirthday;
+                    var limitTimeBegin = CardReader_CMCC.MutiIdCardSigndate;
+                    limitTimeBegin = limitTimeBegin.slice(0,4)+'.'+limitTimeBegin.slice(4,6)+'.'+limitTimeBegin.slice(6,8);
+                    var limitTimeEnd = CardReader_CMCC.MutiIdCardValidterm;
+                    //格式化时考虑兼容"长期"的显示
+                    if(limitTimeEnd.length==8){
+                        limitTimeEnd = limitTimeEnd.slice(0,4)+'.'+limitTimeEnd.slice(4,6)+'.'+limitTimeEnd.slice(6,8);
+                    }
+                    var yx =limitTimeBegin+"-"+limitTimeEnd;
+                    var zz =CardReader_CMCC.MutiIdCardAddress;
+                    var qfjg =CardReader_CMCC.MutiIdCardOrgans;
+                    var zjhm =CardReader_CMCC.MutiIdCardNumber;
+                    var base64 =CardReader_CMCC.MutiIdCardPhoto;
+
+                    var mblj=file_local+"cert_model.bmp";
+                    var sclj=file_local+"cert_"+phone_no+".jpg";
+                    var cardBean = {
+                        certNo : zjhm,
+                        certName : xm,
+                        sex : xb,
+                        nation : qfjg,
+                        birthday : cs,
+                        addr : zz,
+                        validateDate : yx,
+                        picCreatePath : sclj,
+                        picCreateType : 2
+                    };
+                    $("#certInfo").val(JSON.stringify(cardBean));
+                    var ret_cardEmerg=CardReader_CMCC.CardEmerg(xm,xb,mz,cs,yx,zz,qfjg,zjhm,base64,mblj,'','',sclj,'','');
+                    PreviewImg(sclj);
+                    isScan = true;
+                    //保存信息
+                    if(ret_cardEmerg!=0){
+                        //加水印
+                        QRCodeRecord.AddWaterToImage(sclj,sclj,"中国移动通信集团安徽有限公司,"+sysdate,40,0,0,255,"宋体",20);
+                        addCertPageHigh(HWPostil1.getPageCount()+1,-61300,0,5400*4*4*2,5400*2.5*4*0.9+500,sclj);
+                        // rdShowConfirmDialog("读取证件信息结束...",'2');
+                    }else{
+                        // rdShowConfirmDialog("获取信息失败...",'0');
+                        core.insertMachineLog('3', 'N');
+                    }
+                }else{
+                    // alert("获取信息失败...0");
+                    // core.insertMachineLog('3', 'N');
+                    // if(v_projectFlag == "NMG"){ equErrInfo("1","32",ret_cardEmerg);}
+                }
+            }else{
+                rdShowConfirmDialog("打开设备失败...",'0');
+            }
+            //关闭设备
+            var ret_close=CardReader_CMCC.MutiIdCardCloseDevice();
+            if(ret_close!=0){
+                if(v_projectFlag == "NMG"){ equErrInfo("1","32",ret_close);}
+            }
+            //判断是否有扫描页，入表
+            var NoteInfo;
+            while(NoteInfo=HWPostil1.GetNextNote("sys_admin",0,NoteInfo)){
+                if(NoteInfo.split(".")[1]=="ftitle0"){
+                    DWREngine.setAsync(false);
+                    var flag = updateCaseControlStatus("is_scan","Y",case_no);
+                    DWREngine.setAsync(true);
+                }
+            }
+            document.getElementById('cert_pageCount').value=parseInt(document.getElementById('cert_pageCount').value)+1;
+            var pageCount = HWPostil1.getPageCount();
+            document.getElementById('pageCount').value = pageCount;
+
+        }
+
+        function printCert_Two() {
+            $("#card_type").val("2");
+            //扫描二代身份证
+            var tempDate = (new Date()).valueOf();
+            var picName = GetRandomNum(1, 10) + tempDate;
+            var fso = new ActiveXObject("Scripting.FileSystemObject");  //取系统文件对象
+            var cre_dir = "c:\\bmp";//创建目录
+
+            //判断文件夹是否存在，不存在则创建目录
+            if (!fso.FolderExists(cre_dir)) {
+                var newFolderName = fso.CreateFolder(cre_dir);
+            }
+            try {
+                if (objIDCard.LibIsLoaded()) {
+                    objIDCard.ImageFileName = cre_dir + "\\" + picName + ".jpg";
+                    objIDCard.SaveResultFile = true;
+                    objIDCard.Content = 63;
+                    if (objIDCard.RecogNewIDCardALL()) {
+                        cust_message = "";
+                        file_src = cre_dir + "\\" + picName + ".jpg";
+                        $("#PROMPTMSG").text("操作成功");
+                        isScan = true;
+                        isReader = false;
+                        PreviewImg(file_src);
+                        query_close();
+                    } else {
+                        $("#PROMPTMSG").text("操作失败");
+                        isScan = false;
+                        isReader = false;
+                        rdShowMessageDialog(objIDCard.GetLastErrorInfo(), 0);
+                    }
+                } else {
+                    $("#PROMPTMSG").text("操作失败");
+                    showDialog(objIDCard.GetLastErrorInfo(), 0);
+                }
+            } catch (e) {
+                showDialog("未连接扫描仪！", 0);
+            }
+        }
+
+        function Readcard() {
+            document.getElementById('card_type').value = "3";
+            var tempDate = (new Date()).valueOf();
+            var picName = GetRandomNum(1, 10) + tempDate;
+            var fso = new ActiveXObject("Scripting.FileSystemObject");  //取系统文件对象
+            var cre_dir = "c:\\bmp";//创建目录
+            //判断文件夹是否存在，不存在则创建目录
+            if (!fso.FolderExists(cre_dir)) {
+                var newFolderName = fso.CreateFolder(cre_dir);
+            }
+            var picpath_n = cre_dir + "\\" + picName + ".jpg";
+
+            var result;
+            var result2;
+            var result3;
+            var username;
+            result = IdrControl1.InitComm("1001");
+            if (result == 1) {
+                result2 = IdrControl1.Authenticate();
+                if (result2 > 0) {
+                    result3 = IdrControl1.ReadBaseMsgP(picpath_n);
+                    if (result3 > 0) {
+                        var name = IdrControl1.GetName();
+                        var code = IdrControl1.GetCode();
+                        var sex = IdrControl1.GetSex();
+                        if (sex == "1" || sex == "男") {
+                            sex = "男";
+                        } else {
+                            sex = "女";
+                        }
+                        var bir_day = IdrControl1.GetBirthYear() + "" + IdrControl1.GetBirthMonth() + "" + IdrControl1.GetBirthDay();
+                        var IDaddress = IdrControl1.GetAddress();
+                        var idValidDate_obj = IdrControl1.GetValid();
+                        cust_message = name + "|" + sex + "||" + bir_day + "|" + IDaddress + "|" + code + "|" + idValidDate_obj;//
+                        file_src = cre_dir + "\\" + picName + ".jpg";
+                        $("#PROMPTMSG").text("操作成功");
+                        isScan = true;
+                        isReader = true;
+                        PreviewImg(file_src);
+                        query_close();
+                    } else {
+                        rdShowMessageDialog(result3);
+                        IdrControl1.CloseComm();
+                    }
+                } else {
+                    IdrControl1.CloseComm();
+                    $("#PROMPTMSG").text("操作失败");
+                    isScan = false;
+                    isReader = false;
+                    showDialog("请重新将卡片放到读卡器上", 1);
+                }
+            } else {
+                IdrControl1.CloseComm();
+                $("#PROMPTMSG").text("操作失败");
+                isScan = false;
+                isReader = false;
+                showDialog("端口初始化不成功", 0);
+            }
+            IdrControl1.CloseComm();
+        }
+
+        function addCertPageHigh(index,x,y,w,h,file_src)
+        {
+            //每页6张身份证
+            if(IDcardCount%6 == 0){
+                accc = accc + randomString(3);
+                IDcardCount = 0;
+            }
+            var file_local = document.getElementById('file_local').value;
+            var json = document.getElementById('json').value;
+            var obj_c = eval('('+json+')');//转化JSON
+
+            if(IDcardCount == 0){
+                HWPostil1.InsertEmptyPage(99,0,0,0);
+                var accInfonum=HWPostil1.getPageCount()-1;
+                var ret = HWPostil1.InsertNote("ftitle"+accInfonum,accInfonum,3,2000,1000,10000,2000);
+                HWPostil1.SetValue("ftitle"+accInfonum,"身份证页");
+                HWPostil1.SetValue("ftitle"+accInfonum,":PROP::LABEL:3");
+                HWPostil1.SetValue("ftitle"+accInfonum,":PROP:BORDER:0");
+            }else{
+                var accInfonum=HWPostil1.getPageCount()-1;
+                var ret = HWPostil1.InsertNote("ftitle"+accInfonum,accInfonum,3,2000,1000,10000,2000);
+                HWPostil1.SetValue("ftitle"+accInfonum,"  ");
+                HWPostil1.SetValue("ftitle"+accInfonum,":PROP::LABEL:3");
+                HWPostil1.SetValue("ftitle"+accInfonum,":PROP:BORDER:0");
+            }
+            if(IDcardCount%2 == 0){
+                HWPostil1.InsertNote(accc+IDcardCount,accInfonum,3,0,2000+15000*(IDcardCount/2)+2000*(IDcardCount/2),20000,13000);
+                HWPostil1.SetValueEx(accc+IDcardCount,14,0,file_src);
+                HWPostil1.SetValue(accc+IDcardCount,":PROP::LABEL:3");
+                HWPostil1.SetValue(accc+IDcardCount,":PROP:BORDER:0");
+                HWPostil1.DeleteLocalFile(file_src);
+                IDcardCount++;
+            }else if(IDcardCount%2 == 1){
+                HWPostil1.InsertNote(accc+IDcardCount,accInfonum,3,20000,2000+15000*parseInt(IDcardCount/2)+2000*parseInt(IDcardCount/2),20000,13000);
+                HWPostil1.SetValueEx(accc+IDcardCount,14,0,file_src);
+                HWPostil1.SetValue(accc+IDcardCount,":PROP::LABEL:3");
+                HWPostil1.SetValue(accc+IDcardCount,":PROP:BORDER:0");
+                HWPostil1.DeleteLocalFile(file_src);
+                IDcardCount++;
+            }
+        }
+    </script>
+
+</html>

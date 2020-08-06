@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>测试入口面板</title>
+  <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+  .module {
+    width: 100%;
+    border: 0.5px solid black;
+    margin-top: 2px;
+  }
+
+  .module_title {
+    width: 12%;
+    background-color: #100f0e;
+    color: #ffffff;
+    font-weight: bolder;
+    padding-left: 20px;
+  }
+
+  .module_button_area {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .button {
+    border-radius: 4px;
+    text-shadow: 0px 1px 0px #283966;
+    -webkit-box-shadow: inset 0px 39px 0px -24px #9fb4f2;
+    -moz-box-shadow: inset 0px 39px 0px -24px #9fb4f2;
+    box-shadow: inset 0px 39px 0px -24px #9fb4f2;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bolder;
+    background: #7892c2;
+    border: none;
+    text-decoration: none;
+    width: 150px;
+  }
+
+  .button:hover {
+    color: #ffffff;
+    background: #476e9e;
+    text-decoration: none;
+  }
+</style>
+<body>
+  <div style="width: 100%;text-align: center;font-weight: bolder;color: #0a6aa1;font-size: x-large;">功能测试入口</div>
+  <div class="module">
+    <div class="module_title">通用区域</div>
+    <div class="module_button_area">
+      <button class="button" onclick="jumpToNewPage('http://127.0.0.1:7090/admin#')">BHPS-WEB</button>
+    </div>
+  </div>
+  <div class="module">
+    <div class="module_title">业务办理</div>
+    <div class="module_button_area">
+      <button class="button" onclick="jumpToNewPage('http://192.168.2.184:9600/bp003/accept-init')">常规业务办理</button>
+    </div>
+  </div>
+
+  <div class="module">
+    <div class="module_title">业务办理页面组件</div>
+    <div class="module_button_area">
+      <button class="button" onclick="jumpToNewPage('http://192.168.2.184:8088/views/readcard/index.html')">身份证读卡</button>
+      <button class="button" onclick="jumpToNewPage('http://192.168.2.184:8088/views/readcard/index.html')">高拍仪拍照</button>
+    </div>
+  </div>
+</body>
+<script>
+  function jumpToNewPage(url) {
+    window.open(url);
+  }
+</script>
+</html>

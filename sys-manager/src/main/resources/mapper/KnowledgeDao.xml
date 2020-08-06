@@ -1,0 +1,27 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pangmutou.sysmanager.dao.KnowledgeDao">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO `user`(username,password,age,email,address) VALUES (#{username},#{password},#{age},#{email},#{address})
+	</insert>
+
+    <resultMap type="Knowledge" id="knowledgeList">
+        <id column="id" property="id"/>
+        <result column="group" property="group"/>
+        <result column="content" property="content"/>
+        <result column="key" property="key"/>
+    </resultMap>
+    <select id="selectAll" resultMap="knowledgeList">
+		SELECT * FROM `knowledge`
+	</select>
+    <select id="selectAllCount"  resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM `knowledge`
+	</select>
+
+
+    <select id="selectById" resultType="knowledge">
+		SELECT * FROM `knowledge` WHERE id = #{id}
+	</select>
+</mapper>

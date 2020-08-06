@@ -1,0 +1,162 @@
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>测试</title>
+</head>
+<body>
+<button onclick="initOnclick()">签名</button>
+<button onclick="photoGetGP()">拍照</button>
+<button onclick="doAddName()">添加签名</button>
+<button onclick="doDelName()">删除签名</button>
+<button onclick="doAddPhoto()">添加照片</button>
+<button onclick="doDelPhoto()">删除照片</button>
+<table>
+  　<tr>
+  　　<td>
+  　　　　<!--<object id=HWPostil1 height=400 width=1200 classid="clsid:FF1FE7A0-0578-4FEE-A34E-FB21B277D561" codebase=HWPostilfree.ocx#version=1,0,0,1>
+	　　　　　　　　<param name="_Version" value="65536">
+	　　　　　　　　<param name="_ExtentX" value="19473">
+	　　　　　　　　<param name="_ExtentY" value="15875">
+	　　　　　　　　<param name="_StockProps" value="0">
+	　　　　</object> -->
+  <OBJECT id='HWPostil1' height=400 width=1200 classid='clsid:FF1FE7A0-0578-4FEE-A34E-FB21B277D561'
+          codebase='D:/ocx/HWPostil.cab#version=3,1,0,8'>
+  </OBJECT>
+  <OBJECT id='CardReader_CMCC' height='0%' width='0%' style='LEFT: 0px; TOP: 0px'
+          classid='clsid:FFD3E742-47CD-4E67-9613-1BB0D67554FF'
+          codebase='D:/ocx/CardReader_AGILE.cab#version=3,2,0,5'>
+  </object>
+  　　</td>
+  　</tr>
+</table>
+<script type="text/javascript" >
+  HWPostil1.Login("HWSEALDEMO**", 4, 65535, "DEMO", "");
+  document.getElementById("HWPostil1").width = "100%";
+  document.getElementById("HWPostil1").height = "100%";
+  HWPostil1.ShowDefMenu = 0; //隐藏菜单
+  HWPostil1.ShowToolBar = 0; //隐藏工具条
+  HWPostil1.ShowScrollBarButton = 1;
+  //HWPostil1.LoadFile("D:/Z0120190821142053.aip");
+  HWPostil1.LoadFile("D:/sxmb20190829.aip");
+  //HWPostil1.LoadFile("D:/106120190509215323.aip");
+  HWPostil1.Logout();
+
+
+  //签名
+  function initOnclick(){
+    HWPostil1.Login("HWSEALDEMO**", 4, 65535, "DEMO", "");
+    HWPostil1.JSValue=0;
+    HWPostil1.SetValue("PredefineSignArea","");
+    HWPostil1.SetValue("SignAreaDef","");
+    console.log("1111:"+HWPostil1.GetValue("SignAreaDef"));
+    console.log("2222:"+HWPostil1.GetValue("PredefineSignArea"));
+    HWPostil1.ShowFullScreen=1;
+    HWPostil1.CurrAction=264;
+    HWPostil1.SetValue("SET_ENABLECOMMENT_STATE", "0");
+
+  }
+
+  //拍照
+  function photoGetGP(){
+
+    var ret_open=CardReader_CMCC.MutiIdCardOpenDevice_GP(1000);
+    if(ret_open!=0){
+      ret_open=CardReader_CMCC.MutiIdCardOpenDevice_GP(1001);
+    }
+    if(ret_open=="0"){
+      //file_src = "<%=file_local%>" +"cert_<%=phoneNo%>.jpg";
+      var ret=CardReader_CMCC.MutiIdCardPhotograph_GP("D:/1.jpg",1);
+      if(ret=="0"){
+        //PreviewImg(file_src,"350px");
+        CardReader_CMCC.MutiIdCardCloseDevice_GP();
+      }
+    }
+
+  }
+
+  //添加签名图片
+  function doAddName(){
+
+    HWPostil1.Login("HWSEALDEMO**", 4, 65535, "DEMO", "");
+    //HWPostil1.InsertEmptyPage(99,0,0,0);
+    HWPostil1.InsertNote("name1",0,3,10000,1000,5500,87000);
+    //HWPostil1.InsertNote("name2",accInfonum,3,10000,1000,9500,87000);
+    HWPostil1.SetValueEx("name1",14,0,"D:/1.png");
+    //HWPostil1.SetValueEx("name2",14,0,"D:/1.png");
+
+    //addCertPage( 1,-61300, 0, 5400 * 4 * 4 * 2, 5400 * 2.5 * 4 * 0.9 + 500,"0", "D:/1.jpg");
+
+  }
+
+  //删除签名图片
+  function doDelName(){
+    //
+    HWPostil1.DeleteNote("name1");
+    //HWPostil1.DeleteNote("name2");
+    //HWPostil1.DeletePage(HWPostil1.PageCount - 1);
+  }
+
+  //添加图片
+  function doAddPhoto(){
+
+    HWPostil1.Login("HWSEALDEMO**", 4, 65535, "DEMO", "");
+    HWPostil1.InsertEmptyPage(99,0,0,0);
+    var accInfonum=HWPostil1.PageCount-1;
+    HWPostil1.InsertNote("ftitle"+accInfonum,accInfonum,3,2000,1000,8000,1500);
+    HWPostil1.SetValue("ftitle"+accInfonum,"图片页");
+    HWPostil1.SetValue("ftitle"+accInfonum,":PROP::LABEL:3");
+    HWPostil1.SetValue("ftitle"+accInfonum,":PROP:BORDER:0");
+    HWPostil1.InsertNote("acc1",accInfonum,3,1000,1000,19500,17000);
+    HWPostil1.SetValueEx("acc1",14,0,"D:/1.png");
+
+    //HWPostil1.InsertNote("acc2",accInfonum,3,10000,1000,19500,187000);
+    //HWPostil1.SetValueEx("acc2",14,0,"D:/1.jpg");
+    //HWPostil1.SetPageMode(2,1);//设置4列显示
+    HWPostil1.SetValue("acc1",":PROP::LABEL:3");
+    HWPostil1.SetValue("acc1",":PROP:BORDER:0");
+
+    //addCertPage( 1,-61300, 0, 5400 * 4 * 4 * 2, 5400 * 2.5 * 4 * 0.9 + 500,"0", "D:/1.jpg");
+
+  }
+
+  function doDelPhoto(){
+    //
+    HWPostil1.DeleteNote("acc1");
+    HWPostil1.DeletePage(HWPostil1.PageCount - 1);
+  }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
