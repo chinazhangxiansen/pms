@@ -5,9 +5,8 @@ import java.util.List;
 
 import com.pangmutou.sysmanager.bean.User;
 import com.pangmutou.sysmanager.service.IUserService;
-import com.pangmutou.sysmanager.utils.GsonUtil;
+import com.pangmutou.common.utils.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

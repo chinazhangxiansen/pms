@@ -1,4 +1,4 @@
-package com.pangmutou.sysmanager.utils;
+package com.pangmutou.common.utils;
 
 import java.util.ArrayList;
 import java.util.List;

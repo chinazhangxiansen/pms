@@ -29,6 +29,7 @@
         <module>eureka</module>
         <module>zuul</module>
         <module>sys-manager</module>
+        <module>pms-common</module>
     </modules>
 
     <dependencyManagement>

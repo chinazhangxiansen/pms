@@ -16,18 +16,24 @@
   <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
   <![endif]-->
+  <style>
+    html{height:100%}
+    body{min-height:100%}
+  </style>
 </head>
-<body>
-<div>
-  题目如下：<span id="content"></span>
+<body style="border:10px transparent solid;border-image:linear-gradient(to right,#92c10f,#fa1804) 1 10;">
+<div style="text-align: center;padding-top: 10px;">
+  <button onclick="showKey();" class="btn btn-default">答案</button>
+  <button onclick="initData();"  class="btn btn-primary">继续</button>
+  <button onclick="jumpToNewPage('add.html');"  class="btn btn-warning">新增</button>
+  <button onclick="update();"  class="btn btn-danger">了解</button>
+</div>
+<hr/>
+<div style="margin-top: 20px;margin-left: 10px;height:500px;overflow-y:auto;">
+  <input type="hidden" id="id" value=""/>
+  题目如下：<span id="content" style="color: #e9160c;font-weight: bolder;"></span><br/>
   <span style="display: none;" id="key"></span>
 </div>
-<br/><br/><br/><br/><br/><br/><br/>
-<hr/>
-<div style="text-align: center;">
-  <button onclick="showKey();" class="btn btn-default">查看答案</button>&nbsp;<button onclick="initData();"  class="btn btn-primary">下一题</button>
-</div>
-
 
 <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
 <script src="https://cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
@@ -39,9 +45,11 @@
     $("#key").css("display","");
   }
   function initData() {
+    var height = $(window).height();
+
     $("#key").css("display","none");
     $.ajax({
-      url: "https://127.0.0.1:8084/knowledge/random",
+      url: "http://personal2.shenzhuo.vip:20293/sys/knowledge/random",
       context: document.body,
       success: function (data) {
         try{
@@ -51,15 +59,31 @@
           $("#content").html("");
           $("#content").html(content);
           $("#key").html("");
-          $("#key").html(json.key);
+          $("#key").html(json.answer);
+          $("#id").val("");
+          $("#id").val(json.id);
         }catch (e){
           alert(e.message);
         }
-
       }
     });
   }
 
+  function jumpToNewPage(url) {
+    window.open("http://yhshop.natappvip.cc/views/knowledge/"+url);
+  }
+
+  function update(){
+    var id = $("#id").val();
+    $.ajax({
+      url: "http://personal2.shenzhuo.vip:20293/sys/knowledge/updateStatus?id="+id,
+      context: document.body,
+      success: function (data) {
+        alert("已标记，请继续!");
+        initData();
+      }
+    });
+  }
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-package com.pangmutou.sysmanager.utils;
+package com.pangmutou.common.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

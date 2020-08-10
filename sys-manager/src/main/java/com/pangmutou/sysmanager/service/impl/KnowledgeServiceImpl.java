@@ -20,6 +20,10 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         knowledgeDao.insert(knowledge);
     }
 
+    public void update(Knowledge knowledge) {
+        knowledgeDao.update(knowledge);
+    }
+
     @Override
     public List<Knowledge> knowledgeList(Knowledge knowledge) {
         return knowledgeDao.knowledgeList(knowledge);

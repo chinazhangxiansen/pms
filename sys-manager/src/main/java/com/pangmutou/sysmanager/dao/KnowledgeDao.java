@@ -10,6 +10,8 @@ public interface KnowledgeDao {
 
     void insert(Knowledge knowledge);
 
+    void update(Knowledge knowledge);
+
     List<Knowledge> knowledgeList(Knowledge knowledge);
 
     List<Knowledge> selectAll(Knowledge knowledge);

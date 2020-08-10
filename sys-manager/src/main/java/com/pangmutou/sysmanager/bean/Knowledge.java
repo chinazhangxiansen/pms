@@ -5,16 +5,17 @@ public class Knowledge {
     private Integer id;
     private Integer group;
     private String content;
-    private String key;
+    private String answer;
+    private Integer status;
 
     public Knowledge() {
     }
 
-    public Knowledge(Integer id, Integer group, String content, String key) {
+    public Knowledge(Integer id, Integer group, String content, String answer) {
         this.id = id;
         this.group = group;
         this.content = content;
-        this.key = key;
+        this.answer = answer;
     }
 
     public Integer getId() {
@@ -41,11 +42,19 @@ public class Knowledge {
         this.content = content;
     }
 
-    public String getKey() {
-        return key;
+    public String getAnswer() {
+        return answer;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
